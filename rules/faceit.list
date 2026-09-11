@@ -1,0 +1,7 @@
+# NAME: faceit.list
+# SOURCE: https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/master/data/faceit
+# UPSTREAM: RoscomVPN — https://github.com/hydraponique/roscomvpn-routing
+# GENERATED: 2026-09-11 01:13 UTC
+# TOTAL: 2
+DOMAIN-SUFFIX,faceit.com
+DOMAIN-SUFFIX,faceit-cdn.net

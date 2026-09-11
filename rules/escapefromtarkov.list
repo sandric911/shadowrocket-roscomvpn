@@ -1,0 +1,9 @@
+# NAME: escapefromtarkov.list
+# SOURCE: https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/master/data/escapefromtarkov
+# UPSTREAM: RoscomVPN — https://github.com/hydraponique/roscomvpn-routing
+# GENERATED: 2026-09-11 01:13 UTC
+# TOTAL: 4
+DOMAIN-SUFFIX,tarkov.com
+DOMAIN-SUFFIX,eft-store.com
+DOMAIN-SUFFIX,escapefromtarkov.com
+DOMAIN-SUFFIX,eft-project.com

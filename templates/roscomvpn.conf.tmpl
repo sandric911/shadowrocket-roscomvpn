@@ -1,0 +1,96 @@
+# Shadowrocket + RoscomVPN routing — профиль DEFAULT
+# BUILD: {BUILD_DATE}
+# Правила: https://github.com/hydraponique/roscomvpn-routing (порядок как в MIHOMO/default.yaml)
+# Списки для Shadowrocket: {BASE_URL}/rules/
+#
+# Все домены и IP живут в отдельных .list-файлах и подтягиваются по RULE-SET,
+# поэтому сам конфиг короткий. Списки пересобираются из апстрима автоматически.
+
+[General]
+bypass-system = true
+skip-proxy = 192.168.0.0/16, 10.0.0.0/8, 172.16.0.0/12, localhost, *.local, captive.apple.com
+tun-excluded-routes = 10.0.0.0/8, 100.64.0.0/10, 127.0.0.0/8, 169.254.0.0/16, 172.16.0.0/12, 192.0.0.0/24, 192.0.2.0/24, 192.88.99.0/24, 192.168.0.0/16, 198.51.100.0/24, 203.0.113.0/24, 224.0.0.0/4, 255.255.255.255/32, 239.255.255.250/32
+
+# DNS как у RoscomVPN: Яндекс 77.88.8.8 (работает в РФ при белых списках и шатдаунах)
+# и Google 8.8.8.8 опрашиваются параллельно, берётся самый быстрый ответ.
+# Этот DNS используется только для прямых доменов; проксируемые резолвит сервер.
+dns-server = https://77.88.8.8/dns-query, https://8.8.8.8/dns-query
+# Резерв: обычный DNS Яндекса, Google через прокси, затем системный DNS.
+fallback-dns-server = 77.88.8.8, https://dns.google/dns-query#proxy, system
+# Перехват DNS-запросов приложений с «зашитым» DNS (например, 8.8.8.8:53).
+hijack-dns = :53
+
+# IPv6 выключен: geoip-списки RoscomVPN только IPv4, в их конфигах IPv6 режется целиком.
+ipv6 = false
+prefer-ipv6 = false
+
+dns-direct-system = false
+# Если прямой DNS не смог разрешить домен из DIRECT-списка — отправить его через прокси.
+dns-direct-fallback-proxy = true
+private-ip-answer = true
+icmp-auto-reply = true
+always-reject-url-rewrite = false
+udp-policy-not-supported-behaviour = REJECT
+
+# Автообновление: Settings → Auto Update → Config. Вместе с конфигом обновляются списки.
+update-url = {BASE_URL}/roscomvpn.conf
+
+[Rule]
+# Правила читаются сверху вниз, срабатывает первое совпадение.
+# Порядок повторяет RoscomVPN: private → QUIC → BLOCK → PROXY → DIRECT → geoip:direct → FINAL.
+
+# Приватные сети и служебные домены — всегда напрямую
+RULE-SET,{BASE_URL}/rules/geoip-private.list,DIRECT,no-resolve
+RULE-SET,{BASE_URL}/rules/private.list,DIRECT
+
+# Блок QUIC (UDP/443), как у RoscomVPN: через VLESS/Reality UDP часто не ходит,
+# приложения сразу откатываются на TCP. В новых версиях можно заменить на block-quic = all-proxy.
+AND,((PROTOCOL,UDP),(DST-PORT,443)),REJECT-NO-DROP
+
+# BLOCK: реклама VK/Mail.ru и телеметрия Windows
+RULE-SET,{BASE_URL}/rules/category-ads.list,REJECT
+RULE-SET,{BASE_URL}/rules/win-spy.list,REJECT
+
+# Торрент-трекеры и DHT — мимо прокси, бережём сервер (как в Mihomo-конфиге RoscomVPN).
+# Хотите блокировать, как в Happ-профиле — замените DIRECT на REJECT.
+RULE-SET,{BASE_URL}/rules/torrent.list,DIRECT
+
+# PROXY: то, что ломают ТСПУ и РКН
+RULE-SET,{BASE_URL}/rules/google-play.list,PROXY
+RULE-SET,{BASE_URL}/rules/twitch-ads.list,PROXY
+RULE-SET,{BASE_URL}/rules/youtube.list,PROXY
+RULE-SET,{BASE_URL}/rules/telegram.list,PROXY
+RULE-SET,{BASE_URL}/rules/github.list,PROXY
+
+# DIRECT: игровые платформы (экономия трафика, ниже пинг)
+RULE-SET,{BASE_URL}/rules/epicgames.list,DIRECT
+RULE-SET,{BASE_URL}/rules/origin.list,DIRECT
+RULE-SET,{BASE_URL}/rules/riot.list,DIRECT
+RULE-SET,{BASE_URL}/rules/escapefromtarkov.list,DIRECT
+RULE-SET,{BASE_URL}/rules/steam.list,DIRECT
+RULE-SET,{BASE_URL}/rules/faceit.list,DIRECT
+
+# DIRECT: сервисы, которым прокси не нужен
+RULE-SET,{BASE_URL}/rules/twitch.list,DIRECT
+RULE-SET,{BASE_URL}/rules/microsoft.list,DIRECT
+RULE-SET,{BASE_URL}/rules/apple.list,DIRECT
+RULE-SET,{BASE_URL}/rules/pinterest.list,DIRECT
+
+# DIRECT: российские домены, банки ЦБ РФ, госуслуги, белый список
+RULE-SET,{BASE_URL}/rules/category-ru.list,DIRECT
+RULE-SET,{BASE_URL}/rules/whitelist.list,DIRECT
+
+# DIRECT по IP: «хирургический» geoip:direct RoscomVPN (RU/BY минус списки РКН и зарубежные CDN).
+# Без no-resolve намеренно: неизвестный домен резолвится через dns-server, и если IP
+# российский — идёт напрямую, иначе уходит в FINAL. Так работает IPIfNonMatch у RoscomVPN.
+RULE-SET,{BASE_URL}/rules/geoip-direct.list,DIRECT
+# Лёгкая замена, если большой список тормозит: встроенная GeoIP-база (менее точно).
+# GEOIP,RU,DIRECT
+# GEOIP,BY,DIRECT
+
+FINAL,PROXY
+
+[Host]
+# Фиксированные адреса из HAPP/DEFAULT.JSON RoscomVPN
+lkfl2.nalog.ru = 213.24.64.175
+lknpd.nalog.ru = 213.24.64.181

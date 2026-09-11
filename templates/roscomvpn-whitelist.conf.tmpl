@@ -1,0 +1,52 @@
+# Shadowrocket + RoscomVPN routing — профиль WHITELIST
+# BUILD: {BUILD_DATE}
+# Правила: https://github.com/hydraponique/roscomvpn-routing (как в HAPP/WHITELIST.JSON)
+# Списки для Shadowrocket: {BASE_URL}/rules/
+#
+# Напрямую идут только сервисы и IP из белых списков РФ (режим «белых списков» мобильного
+# интернета), всё остальное — через прокси. Списки пересобираются из апстрима автоматически.
+
+[General]
+bypass-system = true
+skip-proxy = 192.168.0.0/16, 10.0.0.0/8, 172.16.0.0/12, localhost, *.local, captive.apple.com
+tun-excluded-routes = 10.0.0.0/8, 100.64.0.0/10, 127.0.0.0/8, 169.254.0.0/16, 172.16.0.0/12, 192.0.0.0/24, 192.0.2.0/24, 192.88.99.0/24, 192.168.0.0/16, 198.51.100.0/24, 203.0.113.0/24, 224.0.0.0/4, 255.255.255.255/32, 239.255.255.250/32
+
+# DNS как у RoscomVPN: Яндекс 77.88.8.8 работает в РФ при белых списках; Google — параллельно.
+dns-server = https://77.88.8.8/dns-query, https://8.8.8.8/dns-query
+fallback-dns-server = 77.88.8.8, https://dns.google/dns-query#proxy, system
+hijack-dns = :53
+
+ipv6 = false
+prefer-ipv6 = false
+
+dns-direct-system = false
+dns-direct-fallback-proxy = true
+private-ip-answer = true
+icmp-auto-reply = true
+always-reject-url-rewrite = false
+udp-policy-not-supported-behaviour = REJECT
+
+update-url = {BASE_URL}/roscomvpn-whitelist.conf
+
+[Rule]
+# Приватные сети и служебные домены — всегда напрямую
+RULE-SET,{BASE_URL}/rules/geoip-private.list,DIRECT,no-resolve
+RULE-SET,{BASE_URL}/rules/private.list,DIRECT
+
+# Блок QUIC (UDP/443), как у RoscomVPN
+AND,((PROTOCOL,UDP),(DST-PORT,443)),REJECT-NO-DROP
+
+# BLOCK: реклама VK/Mail.ru, телеметрия Windows, торренты (как в HAPP/WHITELIST.JSON)
+RULE-SET,{BASE_URL}/rules/category-ads.list,REJECT
+RULE-SET,{BASE_URL}/rules/win-spy.list,REJECT
+RULE-SET,{BASE_URL}/rules/torrent.list,REJECT
+
+# DIRECT: белый список доменов и IP
+RULE-SET,{BASE_URL}/rules/whitelist.list,DIRECT
+RULE-SET,{BASE_URL}/rules/geoip-whitelist.list,DIRECT
+
+FINAL,PROXY
+
+[Host]
+lkfl2.nalog.ru = 213.24.64.175
+lknpd.nalog.ru = 213.24.64.181

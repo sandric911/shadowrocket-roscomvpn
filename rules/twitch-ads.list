@@ -1,0 +1,10 @@
+# NAME: twitch-ads.list
+# SOURCE: https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/master/data/twitch-ads
+# UPSTREAM: RoscomVPN — https://github.com/hydraponique/roscomvpn-routing
+# GENERATED: 2026-09-11 01:13 UTC
+# TOTAL: 5
+DOMAIN-SUFFIX,gql.twitch.tv
+DOMAIN-SUFFIX,usher.ttvnw.net
+DOMAIN-SUFFIX,ads.twitch.tv
+DOMAIN-SUFFIX,playlist.ttvnw.net
+DOMAIN-SUFFIX,static-cdn.jtvnw.net

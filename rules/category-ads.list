@@ -1,0 +1,7 @@
+# NAME: category-ads.list
+# SOURCE: https://raw.githubusercontent.com/hydraponique/roscomvpn-geosite/master/data/category-ads
+# UPSTREAM: RoscomVPN — https://github.com/hydraponique/roscomvpn-routing
+# GENERATED: 2026-09-11 01:13 UTC
+# TOTAL: 2
+DOMAIN-SUFFIX,ad.mail.ru
+DOMAIN-SUFFIX,alt-ad.mail.ru
